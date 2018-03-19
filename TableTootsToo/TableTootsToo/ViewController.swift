@@ -9,15 +9,18 @@
 import UIKit
 
 class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
-    @IBOutlet weak var tabelView: UITableView!
+    @IBOutlet weak var tableView: UITableView!
     let tootReuseID = "toot"
+    
+    var dataModel:KittyDataModel?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         
-        tabelView.register(UINib(nibName: "TableTootsTooCell", bundle: nil) , forCellReuseIdentifier: tootReuseID)
+        tableView.register(UINib(nibName: "TableTootsTooCell", bundle: nil) , forCellReuseIdentifier: tootReuseID)
         
-        downloadJSON(urlString: "https://api.myjson.com/bins/18y459") //Hardcoded strings?!
+        downloadJSON(urlString: "https://api.myjson.com/bins/mbn8h") //Hardcoded strings?!
         
     }
 
@@ -26,8 +29,12 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         // Dispose of any resources that can be recreated.
     }
     
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return dataModel?.sectionArray?.count ?? 0
+    }
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 5
+        return dataModel?.sectionArray?[section].cellArray?.count ?? 0
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -52,8 +59,12 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                 return
             }
             
-            self.parseData(data: data)
+            let dataModel = self.parseData(data: data)
+            self.dataModel = dataModel
             
+            DispatchQueue.main.async {
+                self.tableView.reloadData()
+            }
         }
         
         
@@ -61,18 +72,63 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         task.resume()
     }
     
-    func parseData(data:Data?) {
-        guard let usableData = data else { return }
-        guard let json = try? JSONSerialization.jsonObject(with: usableData, options: []) else { return }
-        guard let jsonDictionary = json as? Dictionary<String,Any> else { return }
-        guard let sections = jsonDictionary["sections"] as? [Dictionary<String,Any>] else { return }
+    func parseData(data:Data?) -> KittyDataModel? {
+        guard let usableData = data else { return nil}
+        guard let json = try? JSONSerialization.jsonObject(with: usableData, options: []) else { return nil }
+        guard let jsonDictionary = json as? Dictionary<String,Any> else { return nil }
+        guard let sections = jsonDictionary["sections"] as? [Any] else { return nil }
         
-        parseSections(sections: sections)
+        let dataModel = KittyDataModel()
+        
+        dataModel.sectionArray = parseSections(sections: sections)
+        
+        return dataModel
     }
     
-    func parseSections(sections:[Dictionary<String,Any>]) {
-        //Next week!
+    func parseSections(sections:[Any]) -> [SectionModel] {
+        
+        var sectionArray = [SectionModel]()
+        
+        for section in sections {
+            guard let section = section as? [Dictionary<String,String>] else { continue }
+            
+            let newSectionModel = SectionModel()
+            
+            newSectionModel.cellArray = parseRowsInSection(section: section)
+            
+            sectionArray.append(newSectionModel)
+        }
+        
+        return sectionArray
     }
+    
+    func parseRowsInSection(section:[Dictionary<String,String>]) -> [CellViewModel] {
+        var cellArray = [CellViewModel]()
+        
+        for cell in section {
+            let cellModel = CellViewModel()
+            cellModel.title = cell["title"]
+            cellModel.subTitle = cell["subTitle"]
+            cellModel.imageURLString = cell["imageURL"]
+            
+            cellArray.append(cellModel)
+        }
+        
+        return cellArray
+    }
+}
 
+class CellViewModel {
+    var title:String?
+    var subTitle:String?
+    var imageURLString:String?
+}
+
+class SectionModel {
+    var cellArray:[CellViewModel]?
+}
+
+class KittyDataModel {
+    var sectionArray:[SectionModel]?
 }
 
