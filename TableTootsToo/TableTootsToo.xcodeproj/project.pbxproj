@@ -14,6 +14,8 @@
 		E15303E5204DF7D7009E0C00 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E15303E3204DF7D7009E0C00 /* LaunchScreen.storyboard */; };
 		E15303ED204DFA7E009E0C00 /* TableTootsTooCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E15303EC204DFA7E009E0C00 /* TableTootsTooCell.xib */; };
 		E15303EF204DFC01009E0C00 /* TableTootsTooCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E15303EE204DFC01009E0C00 /* TableTootsTooCell.swift */; };
+		E1C4454220597C8D0020B30E /* KittysDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1C4454120597C8D0020B30E /* KittysDataSource.swift */; };
+		E1C445452059C0980020B30E /* UIImageView+ImageFromURL.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1C445442059C0980020B30E /* UIImageView+ImageFromURL.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -26,6 +28,8 @@
 		E15303E6204DF7D7009E0C00 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		E15303EC204DFA7E009E0C00 /* TableTootsTooCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = TableTootsTooCell.xib; sourceTree = "<group>"; };
 		E15303EE204DFC01009E0C00 /* TableTootsTooCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TableTootsTooCell.swift; sourceTree = "<group>"; };
+		E1C4454120597C8D0020B30E /* KittysDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KittysDataSource.swift; sourceTree = "<group>"; };
+		E1C445442059C0980020B30E /* UIImageView+ImageFromURL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImageView+ImageFromURL.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -66,6 +70,8 @@
 				E15303E6204DF7D7009E0C00 /* Info.plist */,
 				E15303EC204DFA7E009E0C00 /* TableTootsTooCell.xib */,
 				E15303EE204DFC01009E0C00 /* TableTootsTooCell.swift */,
+				E1C4454120597C8D0020B30E /* KittysDataSource.swift */,
+				E1C445442059C0980020B30E /* UIImageView+ImageFromURL.swift */,
 			);
 			path = TableTootsToo;
 			sourceTree = "<group>";
@@ -143,7 +149,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E1C445452059C0980020B30E /* UIImageView+ImageFromURL.swift in Sources */,
 				E15303DD204DF7D7009E0C00 /* ViewController.swift in Sources */,
+				E1C4454220597C8D0020B30E /* KittysDataSource.swift in Sources */,
 				E15303DB204DF7D7009E0C00 /* AppDelegate.swift in Sources */,
 				E15303EF204DFC01009E0C00 /* TableTootsTooCell.swift in Sources */,
 			);
@@ -307,6 +315,7 @@
 				E15303EB204DF7D7009E0C00 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

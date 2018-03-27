@@ -8,20 +8,24 @@
 
 import UIKit
 
-class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
-    @IBOutlet weak var tableView: UITableView!
-    let tootReuseID = "toot"
+class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, KittyDataModelReadyDelegate {
     
-    var dataModel:KittyDataModel?
+    @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var fullsizeImageContainerView: UIView!
+    @IBOutlet weak var fullsizeImageview: UIImageView!
+    
+    let tootReuseID = "toot"
+    var tableViewData:KittyDataModel?
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         
+        fullsizeImageContainerView.isHidden = true
+        
         tableView.register(UINib(nibName: "TableTootsTooCell", bundle: nil) , forCellReuseIdentifier: tootReuseID)
         
-        downloadJSON(urlString: "https://api.myjson.com/bins/mbn8h") //Hardcoded strings?!
-        
+        KittysDataSource.getKittyData(delegate: self)
     }
 
     override func didReceiveMemoryWarning() {
@@ -30,105 +34,58 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return dataModel?.sectionArray?.count ?? 0
+        return tableViewData?.sectionArray?.count ?? 0
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return dataModel?.sectionArray?[section].cellArray?.count ?? 0
+        return tableViewData?.sectionArray?[section].cellArray?.count ?? 0
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "toot") else { return UITableViewCell() }
         
-        cell.backgroundColor = .red
+        if let cellModel = tableViewData?.sectionArray?[indexPath.section].cellArray?[indexPath.row],
+            let cell  = cell as? TableTootsTooCell {
+            cell.setDataModel(model: cellModel)
+        }
         
         return cell
     }
-    
 
-    func downloadJSON(urlString:String) {
-        guard let requestUrl = URL(string:urlString) else { return }
-        let request = URLRequest(url:requestUrl)
-        let task = URLSession.shared.dataTask(with: request) {
-            (data, response, error) in
-            
-            print("Response recieved")
-            
-            if let error = error {
-                print("ERROR:\(error)" )
-                return
-            }
-            
-            let dataModel = self.parseData(data: data)
-            self.dataModel = dataModel
-            
-            DispatchQueue.main.async {
-                self.tableView.reloadData()
-            }
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        
+        self.fullsizeImageview.transform = CGAffineTransform.identity
+        
+        guard let imageURLString = tableViewData?.sectionArray?[indexPath.section].cellArray?[indexPath.row].imageURLString else { return }
+        fullsizeImageContainerView.isHidden = false
+        fullsizeImageview.setImageWithURLString(urlString: imageURLString)
+    }
+    
+    func kittyDataModelReady(dataModel: KittyDataModel?) {
+        DispatchQueue.main.async { //All updates that the user can see MUST be done on the main thread
+            self.tableViewData = dataModel
+            self.tableView.reloadData()
         }
-        
-        
-        print("Sending Request")
-        task.resume()
     }
     
-    func parseData(data:Data?) -> KittyDataModel? {
-        guard let usableData = data else { return nil}
-        guard let json = try? JSONSerialization.jsonObject(with: usableData, options: []) else { return nil }
-        guard let jsonDictionary = json as? Dictionary<String,Any> else { return nil }
-        guard let sections = jsonDictionary["sections"] as? [Any] else { return nil }
-        
-        let dataModel = KittyDataModel()
-        
-        dataModel.sectionArray = parseSections(sections: sections)
-        
-        return dataModel
+    @IBAction func userDidTouchImageContainer(_ sender: Any) {
+        self.fullsizeImageContainerView.isHidden = true
     }
     
-    func parseSections(sections:[Any]) -> [SectionModel] {
+    @IBAction func userDidPinchOnImageview(_ sender: Any) {
+        guard let recog = sender as? UIPinchGestureRecognizer else { return }
         
-        var sectionArray = [SectionModel]()
+        let pinchScale = recog.scale
+        recog.scale = 1
         
-        for section in sections {
-            guard let section = section as? [Dictionary<String,String>] else { continue }
-            
-            let newSectionModel = SectionModel()
-            
-            newSectionModel.cellArray = parseRowsInSection(section: section)
-            
-            sectionArray.append(newSectionModel)
-        }
-        
-        return sectionArray
+        fullsizeImageview.transform = fullsizeImageview.transform.scaledBy(x: pinchScale, y: pinchScale)
     }
     
-    func parseRowsInSection(section:[Dictionary<String,String>]) -> [CellViewModel] {
-        var cellArray = [CellViewModel]()
-        
-        for cell in section {
-            let cellModel = CellViewModel()
-            cellModel.title = cell["title"]
-            cellModel.subTitle = cell["subTitle"]
-            cellModel.imageURLString = cell["imageURL"]
-            
-            cellArray.append(cellModel)
-        }
-        
-        return cellArray
+    @IBAction func userDidDragImageView(_ sender: Any) {
+        guard let recog = sender as? UIPanGestureRecognizer else { return }
+        let dragDelta = recog.translation(in: self.view)
+        recog.setTranslation(CGPoint(), in: self.view)
+        fullsizeImageview.transform = fullsizeImageview.transform.translatedBy(x: dragDelta.x, y: dragDelta.y)
+      
     }
 }
-
-class CellViewModel {
-    var title:String?
-    var subTitle:String?
-    var imageURLString:String?
-}
-
-class SectionModel {
-    var cellArray:[CellViewModel]?
-}
-
-class KittyDataModel {
-    var sectionArray:[SectionModel]?
-}
-
